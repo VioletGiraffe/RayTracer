@@ -28,8 +28,6 @@ jobs:
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
-      with:
-        archives: 'qtbase qtimageformats'
 
     - name: Windows - setup MSBuild
       if: startsWith(matrix.os, 'windows')
