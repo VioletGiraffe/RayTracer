@@ -3,12 +3,10 @@
 ###################################################
 
 TEMPLATE = app
-TARGET   = NewAwesomeApplication
+TARGET   = RayTracer
 
-#QT = core gui widgets network
+QT = core gui widgets
 #win*:QT += winextras
-CONFIG -= qt
-CONFIG += console
 
 CONFIG += strict_c++ c++17
 
@@ -56,7 +54,8 @@ INCLUDEPATH += \
 ###################################################
 
 SOURCES += \
-	src/main.cpp
+	src/main.cpp \
+	src/mainwindow.cpp
 
 ###################################################
 #                 LIBS
@@ -106,3 +105,9 @@ linux*|mac*|freebsd{
 win32*:!*msvc2012:*msvc* {
 	QMAKE_CXXFLAGS += /FS
 }
+
+FORMS += \
+	src/mainwindow.ui
+
+HEADERS += \
+	src/mainwindow.h
