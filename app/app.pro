@@ -55,7 +55,8 @@ INCLUDEPATH += \
 
 SOURCES += \
 	src/main.cpp \
-	src/mainwindow.cpp
+	src/mainwindow.cpp \
+	src/raytracer.cpp
 
 ###################################################
 #                 LIBS
@@ -110,4 +111,5 @@ FORMS += \
 	src/mainwindow.ui
 
 HEADERS += \
-	src/mainwindow.h
+	src/mainwindow.h \
+	src/raytracer.h
