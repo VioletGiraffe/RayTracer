@@ -38,7 +38,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 	QPainter p{ui->_renderView};
 
 	std::lock_guard lock{_bufferUpdatedMutex};
-	p.drawImage(QPoint{0, 0}, _renderedImage);
+	p.drawImage(
+		QRect(ui->_renderView->rect().topLeft(), _renderedImage.size().scaled(ui->_renderView->size(), Qt::KeepAspectRatio)),
+		_renderedImage);
 
 	return true; // Event consumed
 }

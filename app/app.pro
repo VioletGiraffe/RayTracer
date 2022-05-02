@@ -112,4 +112,5 @@ FORMS += \
 
 HEADERS += \
 	src/mainwindow.h \
+	src/math/vector.hpp \
 	src/raytracer.h
