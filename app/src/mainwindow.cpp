@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QPainter>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -10,11 +11,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->setupUi(this);
 	ui->_renderView->installEventFilter(this);
 
-	_rayTracer.setProgressChangedCallback([this](int p){
-		ui->_progress->setValue(p);
+	_rayTracer.setProgressChangedCallback([this](size_t p){
+		ui->_progress->setValue((int)p);
 	});
 
 	connect(ui->_btnRender, &QPushButton::clicked, this, [this]{
+		if (_rayTracer.inProgress())
+			return;
+
 		auto result = _rayTracer.render(ui->_renderView->width(), ui->_renderView->height());
 		{
 			std::lock_guard lock{_bufferUpdatedMutex};
@@ -23,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
 		ui->_renderView->update();
 		setWindowTitle(QString::number(result.second * 1e-3f, 'f', 1) + " ms");
 	});
+
+	QTimer::singleShot(50, ui->_btnRender, &QPushButton::click);
 }
 
 MainWindow::~MainWindow()

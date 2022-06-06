@@ -1,29 +1,30 @@
 #pragma once
 
-#include <math.h>
+#include <cmath>
 #include <stdint.h>
 #include <type_traits>
 
-template <typename T, int = 0>
+template <typename T, int /* tag */ = 0>
 struct Vec3
 {
 	constexpr Vec3() noexcept = default;
-	constexpr Vec3(Vec3&&) noexcept = default;
-	constexpr Vec3(const Vec3&) noexcept = default;
 
 	constexpr Vec3(T x_, T y_, T z_) noexcept :
 		x{x_}, y{y_}, z{z_}
 	{}
+
 	constexpr Vec3(T val) noexcept :
 		Vec3(val, val, val)
 	{}
 
+	[[nodiscard]] constexpr T length_squared() const noexcept
+	{
+		return x * x + y * y + z * z;
+	}
+
 	[[nodiscard]] constexpr T length() const noexcept
 	{
-		if constexpr (std::is_integral_v<T>)
-			return static_cast<T>(sqrt((float)(x * x) + (float)(y * y) + (float)(z * z)));
-		else
-			return sqrt(x * x + y * y + z * z);
+		return static_cast<T>(std::sqrt(length_squared()));
 	}
 
 	[[nodiscard]] constexpr T abs() const noexcept {return length();}
@@ -54,20 +55,25 @@ struct Vec3
 		return Vec3(x - v.x, y - v.y, z - v.z);
 	}
 
-	[[nodiscard]] constexpr Vec3& operator*=(T k) noexcept
+	constexpr Vec3& operator*=(T k) noexcept
 	{
 		return *this = (*this) * k;
 	}
 
-	[[nodiscard]] constexpr Vec3& operator/=(T k) noexcept
+	constexpr Vec3& operator/=(T k) noexcept
 	{
 		return *this = (*this) / k;
 	}
 
-	[[nodiscard]] constexpr Vec3& normalize() noexcept
+	constexpr Vec3& normalize() noexcept
 	{
-		const auto l = abs();
-		return l > T(0) ? (*this /= l) : *this;
+		const auto l = abs(); // Cannot be negative by definition
+		if (l > T(1e-15)) [[unlikely]]
+		{
+			*this /= l;
+		}
+
+		return *this;
 	}
 
 	[[nodiscard]] constexpr T dot(const Vec3& v) const noexcept
@@ -83,7 +89,7 @@ struct Vec3
 	T x, y, z;
 };
 
-template <typename T, int = 0>
+template <typename T>
 struct Vec4
 {
 	constexpr Vec4() noexcept = default;
@@ -94,8 +100,7 @@ struct Vec4
 		Vec4(val, val, val, val)
 	{}
 
-	template <int tag>
-	constexpr Vec4(const Vec3<T, tag>& v, T w) noexcept :
+	constexpr Vec4(const Vec3<T>& v, T w) noexcept :
 		Vec4(v.x, v.y, v.z, w)
 	{}
 
@@ -107,14 +112,14 @@ struct Vec4
 	T x, y, z, w;
 };
 
-using Vec3i = Vec3<int64_t>;
-using Vec3f = Vec3<float>;
-using Vec3d = Vec3<double>;
+//using Vec3i = Vec3<int64_t>;
+//using Vec3f = Vec3<float>;
+//using Vec3d = Vec3<double>;
 
-using Point3i = Vec3<int64_t, 1>;
-using Point3f = Vec3<float, 1>;
-using Point3d = Vec3<double, 1>;
+//using Point3i = Vec3<int64_t, 1>;
+//using Point3f = Vec3<float, 1>;
+//using Point3d = Vec3<double, 1>;
 
-using Vec4i = Vec4<int64_t>;
-using Vec4f = Vec4<float>;
-using Vec4d = Vec4<double>;
+//using Vec4i = Vec4<int64_t>;
+//using Vec4f = Vec4<float>;
+//using Vec4d = Vec4<double>;

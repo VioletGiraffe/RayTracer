@@ -1,8 +1,11 @@
 #pragma once
 #include "raytracer.h"
+#include "compiler/compiler_warnings_control.h"
 
+DISABLE_COMPILER_WARNINGS
 #include <QImage>
 #include <QMainWindow>
+RESTORE_COMPILER_WARNINGS
 
 #include <mutex>
 

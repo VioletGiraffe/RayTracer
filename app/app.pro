@@ -8,31 +8,18 @@ TARGET   = RayTracer
 QT = core gui widgets
 #win*:QT += winextras
 
-CONFIG += strict_c++ c++17
+CONFIG += strict_c++ c++2a
+CONFIG -= flat
 
 mac* | linux* | freebsd{
 	CONFIG(release, debug|release):CONFIG *= Release optimize_full
 	CONFIG(debug, debug|release):CONFIG *= Debug
 }
 
-contains(QT_ARCH, x86_64) {
-	ARCHITECTURE = x64
-} else {
-	ARCHITECTURE = x86
-}
+ARCHITECTURE = x64
 
-android {
-	Release:OUTPUT_DIR=android/release
-	Debug:OUTPUT_DIR=android/debug
-
-} else:ios {
-	Release:OUTPUT_DIR=ios/release
-	Debug:OUTPUT_DIR=ios/debug
-
-} else {
-	Release:OUTPUT_DIR=release/$${ARCHITECTURE}
-	Debug:OUTPUT_DIR=debug/$${ARCHITECTURE}
-}
+Release:OUTPUT_DIR=release/$${ARCHITECTURE}
+Debug:OUTPUT_DIR=debug/$${ARCHITECTURE}
 
 DESTDIR  = ../bin/$${OUTPUT_DIR}
 OBJECTS_DIR = ../build/$${OUTPUT_DIR}/$${TARGET}
@@ -54,9 +41,28 @@ INCLUDEPATH += \
 ###################################################
 
 SOURCES += \
+	src/camera.cpp \
 	src/main.cpp \
 	src/mainwindow.cpp \
-	src/raytracer.cpp
+	src/raytracer.cpp \
+	src/scene.cpp \
+	src/sphere.cpp
+
+FORMS += \
+	src/mainwindow.ui
+
+HEADERS += \
+	src/camera.h \
+	src/color.hpp \
+	src/mainwindow.h \
+	src/math/ray.hpp \
+	src/math/size2d.hpp \
+	src/math/vector.hpp \
+	src/raytracer.h \
+	src/scene.h \
+	src/sphere.h \
+	src/types.hpp
+
 
 ###################################################
 #                 LIBS
@@ -76,14 +82,15 @@ mac*|linux*|freebsd{
 win*{
 	#LIBS += -lole32 -lShell32 -lUser32
 	QMAKE_CXXFLAGS += /MP /Zi /wd4251
-	QMAKE_CXXFLAGS += /std:c++17 /permissive- /Zc:__cplusplus
+	QMAKE_CXXFLAGS += /permissive- /Zc:__cplusplus
 	QMAKE_CXXFLAGS_WARN_ON = /W4
 	DEFINES += WIN32_LEAN_AND_MEAN NOMINMAX _SCL_SECURE_NO_WARNINGS
 
-	!*msvc2013*:QMAKE_LFLAGS += /DEBUG:FASTLINK
+	Release:QMAKE_CXXFLAGS += /GL
 
-	Debug:QMAKE_LFLAGS += /INCREMENTAL
-	Release:QMAKE_LFLAGS += /OPT:REF /OPT:ICF
+	QMAKE_LFLAGS += /TIME
+	Debug:QMAKE_LFLAGS += /INCREMENTAL /DEBUG:FASTLINK
+	Release:QMAKE_LFLAGS += /DEBUG /OPT:REF /OPT:ICF /LTCG:INCREMENTAL
 }
 
 mac*{
@@ -106,11 +113,3 @@ linux*|mac*|freebsd{
 win32*:!*msvc2012:*msvc* {
 	QMAKE_CXXFLAGS += /FS
 }
-
-FORMS += \
-	src/mainwindow.ui
-
-HEADERS += \
-	src/mainwindow.h \
-	src/math/vector.hpp \
-	src/raytracer.h

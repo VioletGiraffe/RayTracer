@@ -1,39 +1,48 @@
 #include "raytracer.h"
-#include "random/randomnumbergenerator.h"
 #include "system/ctimeelapsed.h"
+#include "utility/on_scope_exit.hpp"
 
 #include <QImage>
 
-RayTracer::RayTracer()
+RayTracer::RayTracer() :
+	_camera(Point(0.0f, 3.0f, 0.0f))
 {
 }
 
-void RayTracer::setProgressChangedCallback(std::function<void(int)> callback) noexcept
+void RayTracer::setProgressChangedCallback(std::function<void (size_t)> callback) noexcept
 {
 	_progressCallback = std::move(callback);
 }
 
-std::pair<QImage, uint64_t> RayTracer::render(int w, int h) noexcept
+std::pair<QImage, uint64_t> RayTracer::render(size_t w, size_t h) noexcept
 {
+	_inProgress = true;
+	EXEC_ON_SCOPE_EXIT([this] {	_inProgress = false; });
+
 	CTimeElapsed timer{true};
 
-	using RandRGB = RNG<uint32_t>;
+	_camera.setResolution(w, h);
 
-	QImage buf(w, h, QImage::Format_RGB32);
-	const auto eigthLine = h / 8;
-	for (int y = 0; y < h; ++y)
+	QImage buf((int)w, (int)h, QImage::Format_RGB32);
+	const auto eighthLine = h / 8;
+	for (size_t y = 0; y < h; ++y)
 	{
-		auto* scanLine = buf.scanLine(y);
-		for (int x = 0; x < w; ++x)
+		auto* scanLine = buf.scanLine((int)y);
+		for (size_t x = 0; x < w; ++x)
 		{
-			const auto value = RandRGB::next() | 0xFF000000U;
-			memcpy(scanLine + x * 4, &value, sizeof(value));
+			const auto colorValue = _scene.intersect(_camera.rayForPixel(x, y)).to32bit();
+			::memcpy(scanLine + x * sizeof(uint32_t), &colorValue, sizeof(uint32_t));
 		}
 
-		if (y % eigthLine == 0)
+		if (y % eighthLine == 0)
 			_progressCallback(y * 100 / h);
 	}
 
 	_progressCallback(100);
 	return {buf, timer.elapsed<std::chrono::microseconds>()};
+}
+
+bool RayTracer::inProgress() const noexcept
+{
+	return _inProgress;
 }
