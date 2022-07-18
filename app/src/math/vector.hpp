@@ -19,15 +19,13 @@ struct Vec3
 
 	[[nodiscard]] constexpr T length_squared() const noexcept
 	{
-		return x * x + y * y + z * z;
+		return dot(*this);
 	}
 
 	[[nodiscard]] constexpr T length() const noexcept
 	{
 		return static_cast<T>(std::sqrt(length_squared()));
 	}
-
-	[[nodiscard]] constexpr T abs() const noexcept {return length();}
 
 	[[nodiscard]] constexpr Vec3 operator*(T k) const noexcept
 	{
@@ -67,7 +65,7 @@ struct Vec3
 
 	constexpr Vec3& normalize() noexcept
 	{
-		const auto l = abs(); // Cannot be negative by definition
+		const auto l = length(); // Cannot be negative by definition
 		if (l > T(1e-15)) [[unlikely]]
 		{
 			*this /= l;
